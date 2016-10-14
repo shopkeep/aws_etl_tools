@@ -1,0 +1,9 @@
+**/.ipynb_checkpoints
+**/*.ipynb
+**/__pycache__/
+**/*.pyc
+**/.DS_Store
+aws_etl_tools.egg-info/
+build/
+dist/
+tmp/*.csv
