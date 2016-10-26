@@ -90,7 +90,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
     @MockS3Connection
     def test_local_file_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
-        file_path = os.path.join(test_helper.TEMP_DIRECTORY, 'csv_data.csv')
+        file_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'csv_data.csv')
         with open(file_path, 'w') as file_writer:
             file_writer.write(file_contents)
 

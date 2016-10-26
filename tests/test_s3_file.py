@@ -19,8 +19,8 @@ class TestS3FileFromFullPath(unittest.TestCase):
     S3_PATH = 's3://' + S3_BUCKET_NAME + '/' + S3_KEY_NAME
     IN_MEMORY_DATA = [('1', 'first_string'), ('2', 'second_string'), ('3', 'third_string')]
 
-    S3_FILE_UPLOAD_PATH = os.path.join(test_helper.TEMP_DIRECTORY, 'test_file_upload.csv')
-    S3_FILE_DOWNLOAD_PATH = os.path.join(test_helper.TEMP_DIRECTORY, 'test_file_download.csv')
+    S3_FILE_UPLOAD_PATH = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'test_file_upload.csv')
+    S3_FILE_DOWNLOAD_PATH = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'test_file_download.csv')
     S3_FILE_CONTENTS = '1,first_string\n2,second_string\n3,third_string\n'
 
     @staticmethod
@@ -87,7 +87,7 @@ class TestS3FileFromFullPath(unittest.TestCase):
 
     @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_upload_empty_file_raises_error(self):
-        local_path_with_empty_file = os.path.join(test_helper.TEMP_DIRECTORY, 'empty_test_file.csv')
+        local_path_with_empty_file = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'empty_test_file.csv')
         with open(local_path_with_empty_file, 'w') as empty_file:
             empty_file.write('')
 
@@ -151,8 +151,8 @@ class TestS3FileFromPathObject(unittest.TestCase):
     KEY_NAME = 'v1/today/results.csv'
     S3_PATH = 's3://{bucket}/{key}'.format(bucket=S3_BUCKET_NAME, key=KEY_NAME)
     PATH_OBJECT = Mock(s3_path=S3_PATH)
-    S3_FILE_UPLOAD_PATH = os.path.join(test_helper.TEMP_DIRECTORY, 'test_file_upload.csv')
-    S3_FILE_DOWNLOAD_PATH = os.path.join(test_helper.TEMP_DIRECTORY, 'test_file_download.csv')
+    S3_FILE_UPLOAD_PATH = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'test_file_upload.csv')
+    S3_FILE_DOWNLOAD_PATH = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'test_file_download.csv')
     S3_FILE_CONTENTS = '1,first_string\n2,second_string\n3,third_string\n'
 
     def setUp(self):

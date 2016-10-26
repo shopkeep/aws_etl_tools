@@ -11,6 +11,7 @@ S3_BASE_PATH = os.getenv(S3_BASE_PATH_ENV_VAR_KEY)
 # optional configuration. by default, ingestion will not be audited, but it's
 # very easy to turn on and configure.
 REDSHIFT_INGEST_AUDIT_TABLE = os.getenv('AWS_ETL_TOOLS_REDSHIFT_INGEST_AUDIT_TABLE', 'public.v1_ingest_audit')
+LOCAL_TEMP_DIRECTORY = os.path.join(os.path.dirname(__file__), 'tmp')
 
 
 # These default to None so the aws connection hierarchy will attempt

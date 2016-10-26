@@ -3,7 +3,7 @@ from datetime import datetime
 import subprocess
 import csv
 
-from aws_etl_tools.s3_file import S3File, LOCAL_TEMP_DIRECTORY
+from aws_etl_tools.s3_file import S3File
 from aws_etl_tools import config
 
 
@@ -77,7 +77,7 @@ def _destination_file_name(destination):
 
 def _transient_local_path(destination):
     file_name = _destination_file_name(destination)
-    return os.path.join(LOCAL_TEMP_DIRECTORY, file_name)
+    return os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
 
 
 def _transient_s3_path(destination):

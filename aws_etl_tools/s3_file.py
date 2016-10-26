@@ -8,9 +8,6 @@ from aws_etl_tools import config
 from aws_etl_tools.exceptions import NoDataFoundError
 
 
-LOCAL_TEMP_DIRECTORY = os.path.join(os.path.dirname(__file__), '..', 'tmp')
-
-
 def parse_s3_path(s3_path):
     s3_path_elements = [string for string in s3_path.split('/') if len(string) > 0]
     bucket_name = s3_path_elements[1]
@@ -29,7 +26,7 @@ def upload_local_file_to_s3_path(local_path, s3_path):
 
 def upload_data_to_s3_path(data, s3_path):
     _, _, file_name = parse_s3_path(s3_path)
-    local_csv_path = os.path.join(LOCAL_TEMP_DIRECTORY, file_name)
+    local_csv_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
     _write_data_to_local_csv(data, local_csv_path)
     return upload_local_file_to_s3_path(local_csv_path, s3_path)
 
@@ -66,7 +63,7 @@ class S3File:
         download_from_s3_to_local_file(self.s3_path, destination_path)
 
     def download_to_temp(self):
-        destination_path = os.path.join(LOCAL_TEMP_DIRECTORY, 's3_download_' + self.file_name)
+        destination_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 's3_download_' + self.file_name)
         self.download(destination_path)
         return destination_path
 

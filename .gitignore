@@ -6,4 +6,5 @@
 aws_etl_tools.egg-info/
 build/
 dist/
-tmp/*.csv
+.eggs/
+**/tmp/*.csv

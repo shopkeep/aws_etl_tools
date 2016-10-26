@@ -12,21 +12,20 @@ running_requirements =[
     'pandas>=0.14.0'
 ]
 
-test_requirements = [
-    'freezegun==0.3.5',
-    'moto==0.4.1',
-    'nose==1.3.7',
-    'rednose==0.4.3'
-]
-
 setup(
     name='aws_etl_tools',
     description='some helpers for getting your data into redshift',
     url='https://github.com/shopkeep/aws_etl_tools',
     author_email='data@shopkeep.com',
-    install_requires=running_requirements,
-    tests_require=running_requirements + test_only_requirements,
     version='0.0.1',
+    install_requires=running_requirements,
+    tests_require=running_requirements + [
+        'freezegun==0.3.5',
+        'moto==0.4.1',
+        'nose==1.3.7',
+        'rednose==0.4.3'
+    ],
     packages=find_packages(),
+    include_package_data=True,
     test_suite='nose.collector'
 )

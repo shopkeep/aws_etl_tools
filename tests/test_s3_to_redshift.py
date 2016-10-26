@@ -23,7 +23,7 @@ class TestS3ToRedshift(unittest.TestCase):
 
     DB_CONNECTION = test_helper.BasicRedshiftButActuallyPostgres()
     UPSERT_UNIQUENESS_KEY = ('col_with_ints',)
-    LOCAL_FILE_PATH = os.path.join(test_helper.TEMP_DIRECTORY, 'output_file.csv')
+    LOCAL_FILE_PATH = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'output_file.csv')
     TABLE = 'public.s3_csv_data'
     AUDIT_TABLE = config.REDSHIFT_INGEST_AUDIT_TABLE
     DB_SELECT_ALL_QUERY = """SELECT col_with_ints, col_with_strs FROM %s""" % TABLE
@@ -57,7 +57,7 @@ class TestS3ToRedshift(unittest.TestCase):
 
     def test_data_not_in_redshift(self):
         current_data_in_table = self.DB_CONNECTION.fetch(self.DB_SELECT_ALL_QUERY)
-        self.assertEquals(current_data_in_table, [])
+        self.assertEqual(current_data_in_table, [])
 
 
     @MockS3Connection(bucket=S3_BUCKET_NAME)
@@ -74,7 +74,7 @@ class TestS3ToRedshift(unittest.TestCase):
         s3_to_redshift(s3_file, RedshiftTable(self.DB_CONNECTION, self.TABLE, self.UPSERT_UNIQUENESS_KEY))
 
         current_data_in_table = self.DB_CONNECTION.fetch(self.DB_SELECT_ALL_QUERY)
-        self.assertEquals(current_data_in_table, self.FILE_CONTENTS)
+        self.assertEqual(current_data_in_table, self.FILE_CONTENTS)
 
 
     @freeze_time(FROZEN_TIME)
@@ -88,7 +88,7 @@ class TestS3ToRedshift(unittest.TestCase):
         s3_to_redshift(s3_file, RedshiftTable(self.DB_CONNECTION, self.TABLE, self.UPSERT_UNIQUENESS_KEY))
 
         recorded_audit_data = self.DB_CONNECTION.fetch(self.AUDIT_TABLE_CONTENTS_QUERY)
-        self.assertEquals(recorded_audit_data, self.EXPECTED_AUDIT_DATA)
+        self.assertEqual(recorded_audit_data, self.EXPECTED_AUDIT_DATA)
 
 
     @MockS3Connection(bucket=S3_BUCKET_NAME)

@@ -12,7 +12,6 @@ from aws_etl_tools.redshift_ingest.ingestors import AuditedUpsertToPostgres
 from . import settings
 
 
-TEMP_DIRECTORY = os.path.join(os.path.dirname(__file__), '..', 'tmp')
 S3_TEST_BUCKET_NAME = settings.S3_TEST_BUCKET_NAME
 
 
@@ -22,7 +21,7 @@ reload(config)
 
 
 def clear_temp_directory():
-    for test_file in glob.glob(TEMP_DIRECTORY + '/*.csv'):
+    for test_file in glob.glob(config.LOCAL_TEMP_DIRECTORY + '/*.csv'):
         os.remove(test_file)
 
 

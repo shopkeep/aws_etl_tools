@@ -23,7 +23,7 @@ class TestAWS(unittest.TestCase):
 
         connection_string = AWS().connection_string()
 
-        self.assertEquals(connection_string, self.LOCAL_CONNECTION_STRING)
+        self.assertEqual(connection_string, self.LOCAL_CONNECTION_STRING)
 
     @patch.object(AWS, '_request_temporary_credentials')
     @patch.object(boto, 'connect_s3')
@@ -39,4 +39,4 @@ class TestAWS(unittest.TestCase):
 
         connection_string = AWS().connection_string()
 
-        self.assertEquals(connection_string, self.EC2_CONNECTION_STRING)
+        self.assertEqual(connection_string, self.EC2_CONNECTION_STRING)
