@@ -187,12 +187,16 @@ class AuditedUpsertToPostgres(AuditedUpsert):
         local_file_path = S3File(file_path).download_to_temp()
         super().__init__(local_file_path, destination)
 
+    def ingest(self):
+        with open(self.file_path) as local_file:
+            cursor = self.database.make_new_cursor()
+            cursor.copy_expert(self._ingest_query(), local_file)
+
     def _copy_statement(self):
         return """
-            COPY {staging_table} FROM '{file_path}' CSV;
+            COPY {staging_table} FROM STDIN CSV;
         """.format(
-            staging_table=self.staging_table,
-            file_path=self.file_path
+            staging_table=self.staging_table
         )
 
     def _fetch_ingest_results(self):
