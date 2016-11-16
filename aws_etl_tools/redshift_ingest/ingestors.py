@@ -12,9 +12,10 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination):
+    def __init__(self, file_path, destination, manifest=False):
         self.file_path = file_path
         self.database = destination.database
+        self.manifest = manifest
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -47,9 +48,9 @@ class BasicUpsert:
             BEGIN TRANSACTION;
 
             CREATE TEMP TABLE {staging_table} (LIKE {target_table});
-            {copy_statement}
+            {copy_statement};
             DELETE FROM {target_table} USING {staging_table} WHERE ({upsert_match_statement});
-            {insert_statement}
+            {insert_statement};
             DROP TABLE {staging_table};
 
             END TRANSACTION;
@@ -62,23 +63,32 @@ class BasicUpsert:
             )
 
     def _copy_statement(self):
-        return """
+        copy_commands = [
+            "CSV",
+            "IGNOREBLANKLINES",
+            "EMPTYASNULL",
+            "BLANKSASNULL",
+            "TIMEFORMAT AS 'auto'",
+            "STATUPDATE ON"
+        ]
+
+        if self.manifest:
+            copy_commands.append('MANIFEST')
+
+        copy_statement =  """
             COPY {staging_table} FROM '{s3_path}'
-                WITH CREDENTIALS AS '{connection_string}'
-                CSV
-                IGNOREBLANKLINES
-                EMPTYASNULL
-                BLANKSASNULL
-                TIMEFORMAT AS 'auto'
-                STATUPDATE ON;
+            {copy_commands}
         """.format(
             staging_table=self.staging_table,
             s3_path=self.file_path,
-            connection_string=self.connection_string
+            connection_string=self.connection_string,
+            copy_commands="\n".join(copy_commands)
         )
 
+        return copy_statement
+
     def _insert_statement(self):
-        return "INSERT INTO {target_table} SELECT * FROM {staging_table};".format(
+        return "INSERT INTO {target_table} SELECT * FROM {staging_table}".format(
             target_table=self.target_table,
             staging_table=self.staging_table
         )
