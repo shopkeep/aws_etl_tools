@@ -12,10 +12,10 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination, manifest=False):
+    def __init__(self, file_path, destination, with_manifest=False):
         self.file_path = file_path
         self.database = destination.database
-        self.manifest = manifest
+        self.with_manifest = with_manifest
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -72,7 +72,7 @@ class BasicUpsert:
             "STATUPDATE ON"
         ]
 
-        if self.manifest:
+        if self.with_manifest:
             copy_commands.append('MANIFEST')
 
         copy_statement =  """
@@ -103,8 +103,8 @@ class BasicUpsert:
 
 class AuditedUpsert(BasicUpsert):
 
-    def __init__(self, file_path, destination):
-        super().__init__(file_path, destination)
+    def __init__(self, file_path, destination, with_manifest=False):
+        super().__init__(file_path, destination, with_manifest)
         self.uuid = None
         self.load_start_time = None
         self.audit_table = config.REDSHIFT_INGEST_AUDIT_TABLE
