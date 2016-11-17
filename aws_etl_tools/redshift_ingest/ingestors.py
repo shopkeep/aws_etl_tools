@@ -12,10 +12,11 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination, with_manifest=False):
+    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None):
         self.file_path = file_path
         self.database = destination.database
         self.with_manifest = with_manifest
+        self.jsonpaths = jsonpaths
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -71,9 +72,8 @@ class BasicUpsert:
             "TIMEFORMAT AS 'auto'",
             "STATUPDATE ON"
         ]
-
-        if self.with_manifest:
-            copy_commands.append('MANIFEST')
+        copy_commands.append('MANIFEST') if self.manifest else None
+        copy_commands.append("json '{}'".format(self.jsonpaths)) if self.jsonpaths else None
 
         copy_statement =  """
             COPY {staging_table} FROM '{s3_path}'
@@ -103,8 +103,8 @@ class BasicUpsert:
 
 class AuditedUpsert(BasicUpsert):
 
-    def __init__(self, file_path, destination, with_manifest=False):
-        super().__init__(file_path, destination, with_manifest)
+    def __init__(self, file_path, destination, **kwargs):
+        super().__init__(file_path, destination, **kwargs)
         self.uuid = None
         self.load_start_time = None
         self.audit_table = config.REDSHIFT_INGEST_AUDIT_TABLE
