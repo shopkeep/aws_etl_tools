@@ -65,34 +65,29 @@ class BasicUpsert:
             )
 
     @property
-    def default_copy_commands(self):
-        return ["EMPTYASNULL", "BLANKSASNULL", "TIMEFORMAT AS 'auto'", "STATUPDATE ON"]
-
-    @property
-    def csv_copy_commands(self):
-        return ["CSV", "IGNOREBLANKLINES"]
-
-    def _copy_statement(self):
-        copy_commands = self.default_copy_commands
-        copy_commands.append('MANIFEST') if self.manifest else None
-        copy_commands.append('GZIP') if self.gzip else None
+    def copy_parameters(self):
+        copy_parameters = ["EMPTYASNULL", "BLANKSASNULL", "TIMEFORMAT AS 'auto'", "STATUPDATE ON"]
+        copy_parameters.append('MANIFEST') if self.manifest else None
+        copy_parameters.append('GZIP') if self.gzip else None
 
         if self.jsonpaths:
-            copy_commands.append("JSON '{}'".format(self.jsonpaths))
+            copy_parameters.append("JSON '{}'".format(self.jsonpaths))
         else:
-            copy_commands.extend(self.csv_copy_commands)
+            copy_parameters.extend(['CSV', 'IGNOREBLANKLINES'])
 
-        copy_statement =  """
+        return copy_parameters
+
+    def _copy_statement(self):
+        return """
             COPY {staging_table} FROM '{s3_path}'
+            WITH CREDENTIALS AS '{connection_string}'
             {copy_commands}
         """.format(
             staging_table=self.staging_table,
             s3_path=self.file_path,
             connection_string=self.connection_string,
-            copy_commands="\n".join(copy_commands)
+            copy_commands="\n".join(self.copy_parameters)
         )
-
-        return copy_statement
 
     def _insert_statement(self):
         return "INSERT INTO {target_table} SELECT * FROM {staging_table}".format(
