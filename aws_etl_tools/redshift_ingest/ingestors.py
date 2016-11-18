@@ -12,11 +12,12 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None):
+    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None, gzip=None):
         self.file_path = file_path
         self.database = destination.database
         self.with_manifest = with_manifest
         self.jsonpaths = jsonpaths
+        self.gzip = gzip
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -63,17 +64,23 @@ class BasicUpsert:
                 upsert_match_statement=self._upsert_match_statement()
             )
 
+    @property
+    def default_copy_commands(self):
+        return ["EMPTYASNULL", "BLANKSASNULL", "TIMEFORMAT AS 'auto'", "STATUPDATE ON"]
+
+    @property
+    def csv_copy_commands(self):
+        return ["CSV", "IGNOREBLANKLINES"]
+
     def _copy_statement(self):
-        copy_commands = [
-            "CSV",
-            "IGNOREBLANKLINES",
-            "EMPTYASNULL",
-            "BLANKSASNULL",
-            "TIMEFORMAT AS 'auto'",
-            "STATUPDATE ON"
-        ]
+        copy_commands = self.default_copy_commands
         copy_commands.append('MANIFEST') if self.manifest else None
-        copy_commands.append("json '{}'".format(self.jsonpaths)) if self.jsonpaths else None
+        copy_commands.append('GZIP') if self.gzip else None
+
+        if self.jsonpaths:
+            copy_commands.append("JSON '{}'".format(self.jsonpaths))
+        else:
+            copy_commands.extend(self.csv_copy_commands)
 
         copy_statement =  """
             COPY {staging_table} FROM '{s3_path}'
