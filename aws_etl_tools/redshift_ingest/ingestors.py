@@ -12,9 +12,12 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination):
+    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None, gzip=None):
         self.file_path = file_path
         self.database = destination.database
+        self.with_manifest = with_manifest
+        self.jsonpaths = jsonpaths
+        self.gzip = gzip
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -47,9 +50,9 @@ class BasicUpsert:
             BEGIN TRANSACTION;
 
             CREATE TEMP TABLE {staging_table} (LIKE {target_table});
-            {copy_statement}
+            {copy_statement};
             DELETE FROM {target_table} USING {staging_table} WHERE ({upsert_match_statement});
-            {insert_statement}
+            {insert_statement};
             DROP TABLE {staging_table};
 
             END TRANSACTION;
@@ -61,24 +64,33 @@ class BasicUpsert:
                 upsert_match_statement=self._upsert_match_statement()
             )
 
+    @property
+    def copy_parameters(self):
+        copy_parameters = ["EMPTYASNULL", "BLANKSASNULL", "TIMEFORMAT AS 'auto'", "STATUPDATE ON"]
+        copy_parameters.append('MANIFEST') if self.with_manifest else None
+        copy_parameters.append('GZIP') if self.gzip else None
+
+        if self.jsonpaths:
+            copy_parameters.append("JSON '{}'".format(self.jsonpaths))
+        else:
+            copy_parameters.extend(['CSV', 'IGNOREBLANKLINES'])
+
+        return copy_parameters
+
     def _copy_statement(self):
         return """
             COPY {staging_table} FROM '{s3_path}'
-                WITH CREDENTIALS AS '{connection_string}'
-                CSV
-                IGNOREBLANKLINES
-                EMPTYASNULL
-                BLANKSASNULL
-                TIMEFORMAT AS 'auto'
-                STATUPDATE ON;
+            WITH CREDENTIALS AS '{connection_string}'
+            {copy_commands}
         """.format(
             staging_table=self.staging_table,
             s3_path=self.file_path,
-            connection_string=self.connection_string
+            connection_string=self.connection_string,
+            copy_commands="\n".join(self.copy_parameters)
         )
 
     def _insert_statement(self):
-        return "INSERT INTO {target_table} SELECT * FROM {staging_table};".format(
+        return "INSERT INTO {target_table} SELECT * FROM {staging_table}".format(
             target_table=self.target_table,
             staging_table=self.staging_table
         )
@@ -93,8 +105,8 @@ class BasicUpsert:
 
 class AuditedUpsert(BasicUpsert):
 
-    def __init__(self, file_path, destination):
-        super().__init__(file_path, destination)
+    def __init__(self, file_path, destination, **kwargs):
+        super().__init__(file_path, destination, **kwargs)
         self.uuid = None
         self.load_start_time = None
         self.audit_table = config.REDSHIFT_INGEST_AUDIT_TABLE
