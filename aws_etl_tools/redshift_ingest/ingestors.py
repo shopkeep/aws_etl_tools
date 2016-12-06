@@ -12,12 +12,13 @@ from aws_etl_tools import config
 
 
 class BasicUpsert:
-    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None, gzip=None):
+    def __init__(self, file_path, destination, with_manifest=False, jsonpaths=None, gzip=None, max_errors=None):
         self.file_path = file_path
         self.database = destination.database
         self.with_manifest = with_manifest
         self.jsonpaths = jsonpaths
         self.gzip = gzip
+        self.max_errors = max_errors
         self.target_table = destination.target_table
         self.schema_name, self.table_name = self.target_table.split('.')
         self.staging_table = destination.unique_identifier
@@ -69,6 +70,7 @@ class BasicUpsert:
         copy_parameters = ["EMPTYASNULL", "BLANKSASNULL", "TIMEFORMAT AS 'auto'", "STATUPDATE ON"]
         copy_parameters.append('MANIFEST') if self.with_manifest else None
         copy_parameters.append('GZIP') if self.gzip else None
+        copy_parameters.append('MAXERROR %s' % self.max_errors) if self.max_errors else None
 
         if self.jsonpaths:
             copy_parameters.append("JSON '{}'".format(self.jsonpaths))
