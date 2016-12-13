@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 
 from boto.s3.key import Key
@@ -25,10 +26,13 @@ def upload_local_file_to_s3_path(local_path, s3_path):
         raise NoDataFoundError('The file you\'ve uploaded to S3 has a size of 0 KB')
 
 def upload_data_to_s3_path(data, s3_path):
+    ''' takes some data, writes it locally to a CSV, and then uploads that to s3.
+    `data`: a simple iterable of iterables: e.g. a list of tuples
+    `s3_path`: a full s3_path: e.g. s3://ye-olde-bucket/namespace/data.csv'''
     _, _, file_name = parse_s3_path(s3_path)
-    local_csv_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
-    _write_data_to_local_csv(data, local_csv_path)
-    return upload_local_file_to_s3_path(local_csv_path, s3_path)
+    local_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
+    _write_data_to_local_csv(data, local_path)
+    return upload_local_file_to_s3_path(local_path, s3_path)
 
 def download_from_s3_to_local_file(s3_path, local_path):
     bucket_name, key_name, file_name = parse_s3_path(s3_path)
@@ -37,8 +41,8 @@ def download_from_s3_to_local_file(s3_path, local_path):
     s3_key_object.key = key_name
     s3_key_object.get_contents_to_filename(local_path)
 
-def _write_data_to_local_csv(data, local_csv_path):
-    with open(local_csv_path, 'w') as f:
+def _write_data_to_local_csv(data, local_path):
+    with open(local_path, 'w') as f:
         writer = csv.writer(f, delimiter=',')
         for row in data:
             writer.writerow(row)
@@ -66,6 +70,17 @@ class S3File:
         destination_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 's3_download_' + self.file_name)
         self.download(destination_path)
         return destination_path
+
+    @classmethod
+    def from_json_from_dict(cls, data, s3_path):
+        '''Serialize a dict to json and upload it to s3.'''
+        s3_path = cls._disambiguate_s3_path(s3_path)
+        _, _, file_name = parse_s3_path(s3_path)
+        local_file_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 's3_upload_dict_' + file_name)
+        with open(local_file_path, 'w') as json_file:
+            json.dump(data, json_file)
+        upload_local_file_to_s3_path(local_file_path, s3_path)
+        return cls(s3_path)
 
     @classmethod
     def from_in_memory_data(cls, data, s3_path):

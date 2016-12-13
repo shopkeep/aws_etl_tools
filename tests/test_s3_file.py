@@ -1,5 +1,6 @@
 import csv
 from importlib import reload
+import json
 import os
 import unittest
 from unittest.mock import Mock
@@ -184,3 +185,22 @@ class TestS3FileFromPathObject(unittest.TestCase):
         s3_file = S3File(s3_path=self.PATH_OBJECT)
 
         self.assertEqual(s3_file.key_name, self.KEY_NAME)
+
+
+class TestS3JsonFileFromDict(unittest.TestCase):
+    S3_BUCKET_NAME = 'test-s3-bucket'
+    S3_PATH = 's3://{bucket}/namespace/configuration.json'.format(bucket=S3_BUCKET_NAME)
+    DATA = {'foo': 'bar', 'baz': 6, 'jim': False}
+
+    def tearDown(self):
+        test_helper.clear_temp_directory()
+
+
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
+    def test_dictionary_becomes_json_file_in_s3(self):
+        file = S3File.from_json_from_dict(data=self.DATA, s3_path=self.S3_PATH)
+
+        temp_path = file.download_to_temp()
+        with open(temp_path) as file:
+            actual_data = json.load(file)
+        self.assertEqual(actual_data, self.DATA)
