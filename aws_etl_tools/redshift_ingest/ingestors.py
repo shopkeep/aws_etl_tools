@@ -136,7 +136,7 @@ class AuditedUpsert(BasicUpsert):
             }
         )
 
-    def cleanup(self):
+    def final_cleanup(self):
         try:
             self.database.execute("""VACUUM {target_table};""".format(target_table=self.target_table))
         except DatabaseError:
