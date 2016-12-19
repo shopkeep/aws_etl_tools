@@ -77,6 +77,23 @@ class TestS3ToRedshift(unittest.TestCase):
         self.assertEqual(current_data_in_table, self.FILE_CONTENTS)
 
 
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
+    def test_additional_args_are_passed_through_to_ingestion_class(self):
+        arbitrary_s3_path = 's3://dont/care'
+        mock_s3_file = Mock(s3_path=arbitrary_s3_path)
+        arbitrary_ingestion_kwargs = { 'favorite_candy': 'snickers' }
+        unloadable_database = test_helper.UnloadableRedshift
+        unreachable_destination = RedshiftTable(unloadable_database, self.TABLE, self.UPSERT_UNIQUENESS_KEY)
+
+        s3_to_redshift(mock_s3_file, unreachable_destination, **arbitrary_ingestion_kwargs)
+
+        unloadable_database.ingestion_class.assert_called_with(
+            arbitrary_s3_path,
+            unreachable_destination,
+            **arbitrary_ingestion_kwargs
+        )
+
+
     @freeze_time(FROZEN_TIME)
     @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_upsert_audit(self):
