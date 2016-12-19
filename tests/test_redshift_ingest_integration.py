@@ -49,7 +49,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assertEqual(actual_count_of_audit_fields, self.EXPECTED_COUNT_OF_AUDIT_FIELDS)
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_in_memory_data_to_redshift(self):
         source_data = [[5, 'funzies'], [7, 'sadzies']]
 
@@ -59,7 +59,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_dataframe_to_redshift(self):
         source_dataframe = pd.DataFrame(
             [(5, 'funzies'), (7, 'sadzies')],
@@ -73,7 +73,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_postgres_query_to_redshift(self):
         source_db = test_helper.BasicPostgres()
         source_query = """
@@ -87,7 +87,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_local_file_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         file_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'csv_data.csv')
@@ -100,7 +100,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_s3_path_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         s3_bucket_name = test_helper.S3_TEST_BUCKET_NAME
