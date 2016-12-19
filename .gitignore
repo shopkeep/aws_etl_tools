@@ -9,3 +9,4 @@ dist/
 .eggs/
 **/tmp/*.csv
 **/tmp/*.json
+**/tmp/*.manifest

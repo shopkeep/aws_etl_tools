@@ -113,3 +113,16 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
 
         self.assert_data_in_target()
         self.assert_audit_row_created()
+
+
+    @MockS3Connection()
+    def test_manifest_to_redshift_raises_value_error(self):
+        '''This cannot be integration tested because Postgres cannot trivially
+            be made to handle manifest files.'''
+        expected_exception_args = ('Postgres cannot handle manifests like redshift. Sorry. ',)
+        manifest_dict = { "entries": [{"url": 's3://this/doesnt/matter.manifest', "mandatory": True}] }
+
+        with self.assertRaises(ValueError) as exception_context_manager:
+            from_manifest(manifest_dict, self.DESTINATION)
+
+        self.assertEqual(exception_context_manager.exception.args, expected_exception_args)

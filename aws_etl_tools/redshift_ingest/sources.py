@@ -14,6 +14,14 @@ def s3_to_redshift(s3_file, destination, **ingestion_args):
     ingestor()
 
 
+def from_manifest(manifest, destination, **ingestion_args):
+    '''from a manifest dict'''
+    s3_path = _transient_s3_path(destination) + '.manifest'
+    s3_manifest = S3File.from_json_from_dict(manifest, s3_path)
+
+    s3_to_redshift(s3_manifest, destination, with_manifest=True, **ingestion_args)
+
+
 def from_s3_file(s3_file, destination):
     s3_to_redshift(s3_file, destination)
 
