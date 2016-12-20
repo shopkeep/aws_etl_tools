@@ -44,9 +44,9 @@ class BasicRedshiftButActuallyPostgres(RedshiftDatabase):
 
 
 class UnloadableRedshift(BasicRedshiftButActuallyPostgres):
-    # useful for unit testing and in specific situations
-    # where local Postgres cannot be made to mock Redshift trivially
-
+    '''This database class is useful for unit testing and in specific situations
+       where a local Postgres instance cannot be made to mock Redshift because the behaviors
+       and APIs differ by too much.'''
     ingestor = Mock()
     ingestion_class = Mock()
     ingestion_class.return_value = ingestor

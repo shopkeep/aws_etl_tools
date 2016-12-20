@@ -15,9 +15,10 @@ def s3_to_redshift(s3_file, destination, **ingestion_args):
 
 
 def from_manifest(manifest, destination, **ingestion_args):
-    '''from a manifest dict'''
+    '''From a dict that can be jsonified and uploaded to S3. For more info on manifests,
+       see http://docs.aws.amazon.com/redshift/latest/dg/loading-data-files-using-manifest.html'''
     s3_path = _transient_s3_path(destination) + '.manifest'
-    s3_manifest = S3File.from_json_from_dict(manifest, s3_path)
+    s3_manifest = S3File.from_json_serializable(manifest, s3_path)
 
     s3_to_redshift(s3_manifest, destination, with_manifest=True, **ingestion_args)
 

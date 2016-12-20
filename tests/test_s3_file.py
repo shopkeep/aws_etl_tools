@@ -195,10 +195,9 @@ class TestS3JsonFileFromDict(unittest.TestCase):
     def tearDown(self):
         test_helper.clear_temp_directory()
 
-
     @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_dictionary_becomes_json_file_in_s3(self):
-        file = S3File.from_json_from_dict(data=self.DATA, s3_path=self.S3_PATH)
+        file = S3File.from_json_serializable(data=self.DATA, s3_path=self.S3_PATH)
 
         temp_path = file.download_to_temp()
         with open(temp_path) as file:

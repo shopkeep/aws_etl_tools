@@ -72,7 +72,7 @@ class S3File:
         return destination_path
 
     @classmethod
-    def from_json_from_dict(cls, data, s3_path):
+    def from_json_serializable(cls, data, s3_path):
         '''Serialize a dict to json and upload it to s3.'''
         s3_path = cls._disambiguate_s3_path(s3_path)
         _, _, file_name = parse_s3_path(s3_path)
@@ -84,6 +84,9 @@ class S3File:
 
     @classmethod
     def from_in_memory_data(cls, data, s3_path):
+        '''Given some data, write it to a CSV in s3 and return an S3File abstraction.
+           `data`: a simple iterable of iterables: e.g. a list of tuples
+           `s3_path`: a full, partial, or relative s3_path'''
         s3_path = cls._disambiguate_s3_path(s3_path)
         upload_data_to_s3_path(data, s3_path)
         return cls(s3_path)

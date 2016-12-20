@@ -15,7 +15,7 @@ class TestRedshiftIngestManifest(unittest.TestCase):
 
     FROZEN_TIME = '2015-11-30 22:36:43.421342'
     S3_BUCKET_NAME = test_helper.S3_TEST_BUCKET_NAME
-    SCHEMA = 'pubilc'
+    SCHEMA = 'public'
     TABLENAME = 'test_channels'
     TARGET_TABLE = '{schema}.{table}'.format(schema=SCHEMA, table=TABLENAME)
     TARGET_DATABASE = test_helper.UnloadableRedshift()
