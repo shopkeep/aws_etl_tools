@@ -49,7 +49,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assertEqual(actual_count_of_audit_fields, self.EXPECTED_COUNT_OF_AUDIT_FIELDS)
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_in_memory_data_to_redshift(self):
         source_data = [[5, 'funzies'], [7, 'sadzies']]
 
@@ -59,7 +59,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_dataframe_to_redshift(self):
         source_dataframe = pd.DataFrame(
             [(5, 'funzies'), (7, 'sadzies')],
@@ -73,7 +73,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_postgres_query_to_redshift(self):
         source_db = test_helper.BasicPostgres()
         source_query = """
@@ -87,7 +87,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_local_file_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         file_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'csv_data.csv')
@@ -100,7 +100,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection
+    @MockS3Connection()
     def test_s3_path_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         s3_bucket_name = test_helper.S3_TEST_BUCKET_NAME
@@ -113,3 +113,16 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
 
         self.assert_data_in_target()
         self.assert_audit_row_created()
+
+
+    @MockS3Connection()
+    def test_manifest_to_redshift_raises_value_error(self):
+        '''This cannot be integration tested because Postgres cannot trivially
+            be made to handle manifest files.'''
+        expected_exception_args = ('Postgres cannot handle manifests like redshift. Sorry. ',)
+        manifest_dict = { "entries": [{"url": 's3://this/doesnt/matter.manifest', "mandatory": True}] }
+
+        with self.assertRaises(ValueError) as exception_context_manager:
+            from_manifest(manifest_dict, self.DESTINATION)
+
+        self.assertEqual(exception_context_manager.exception.args, expected_exception_args)

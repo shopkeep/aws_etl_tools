@@ -7,11 +7,20 @@ from aws_etl_tools.s3_file import S3File
 from aws_etl_tools import config
 
 
-def s3_to_redshift(s3_file, destination):
-    file_path = s3_file.s3_path
+def s3_to_redshift(s3_file, destination, **ingestion_args):
+    s3_path = s3_file.s3_path
     ingestion_class = destination.database.ingestion_class
-    ingestor = ingestion_class(file_path, destination)
+    ingestor = ingestion_class(s3_path, destination, **ingestion_args)
     ingestor()
+
+
+def from_manifest(manifest, destination, **ingestion_args):
+    '''From a dict that can be jsonified and uploaded to S3. For more info on manifests,
+       see http://docs.aws.amazon.com/redshift/latest/dg/loading-data-files-using-manifest.html'''
+    s3_path = _transient_s3_path(destination) + '.manifest'
+    s3_manifest = S3File.from_json_serializable(manifest, s3_path)
+
+    s3_to_redshift(s3_manifest, destination, with_manifest=True, **ingestion_args)
 
 
 def from_s3_file(s3_file, destination):
@@ -19,19 +28,22 @@ def from_s3_file(s3_file, destination):
 
 
 def from_s3_path(s3_path, destination):
+    '''Assumes a CSV'''
     s3_file = S3File(s3_path)
     from_s3_file(s3_file, destination)
 
 
 def from_local_file(file_path, destination):
-    s3_path = _transient_s3_path(destination)
+    '''Assumes a CSV'''
+    s3_path = _transient_s3_path(destination) + '.csv'
     s3_file = S3File.from_local_file(file_path, s3_path)
 
     from_s3_file(s3_file, destination)
 
 
 def from_in_memory(data, destination):
-    file_path = _transient_local_path(destination)
+    '''Assumes an iterable of iterables, e.g. a list of tuples'''
+    file_path = _transient_local_path(destination) + '.csv'
     with open(file_path, 'w') as f:
         writer = csv.writer(f, delimiter=',')
         for row in data:
@@ -41,7 +53,7 @@ def from_in_memory(data, destination):
 
 
 def from_dataframe(dataframe, destination, **df_kwargs):
-    file_path = _transient_local_path(destination)
+    file_path = _transient_local_path(destination) + '.csv'
     arguments = {
         'index': False,
         'header': False
@@ -53,7 +65,7 @@ def from_dataframe(dataframe, destination, **df_kwargs):
 
 
 def from_postgres_query(database, query, destination):
-    file_path = _transient_local_path(destination)
+    file_path = _transient_local_path(destination) + '.csv'
     with open(file_path, 'w') as f:
         subprocess.call([
                 'psql',
@@ -71,10 +83,6 @@ def from_postgres_query(database, query, destination):
     from_local_file(file_path, destination)
 
 
-def _destination_file_name(destination):
-    return destination.unique_identifier + '.csv'
-
-
 def _transient_local_path(destination):
     file_name = _destination_file_name(destination)
     return os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
@@ -89,7 +97,10 @@ def _transient_s3_path(destination):
 def _s3_ingest_subpath(destination):
     database_name = destination.database.__class__.__name__.lower()
     return os.path.join(
-            database_name,
-            destination.table_schema,
-            _destination_file_name(destination)
-        )
+        database_name,
+        destination.table_schema,
+        _destination_file_name(destination)
+    )
+
+def _destination_file_name(destination):
+    return destination.unique_identifier

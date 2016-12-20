@@ -4,6 +4,7 @@ from importlib import reload
 
 import boto
 from moto import mock_s3
+from unittest.mock import Mock
 
 from aws_etl_tools import config
 from aws_etl_tools.postgres_database import PostgresDatabase
@@ -40,3 +41,12 @@ class BasicRedshiftButActuallyPostgres(RedshiftDatabase):
 
     def __init__(self):
         self.credentials = settings.REDSHIFT_TEST_CREDENTIALS
+
+
+class UnloadableRedshift(BasicRedshiftButActuallyPostgres):
+    '''This database class is useful for unit testing and in specific situations
+       where a local Postgres instance cannot be made to mock Redshift because the behaviors
+       and APIs differ by too much.'''
+    ingestor = Mock()
+    ingestion_class = Mock()
+    ingestion_class.return_value = ingestor

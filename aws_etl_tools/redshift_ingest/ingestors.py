@@ -197,9 +197,11 @@ class AuditedUpsertToPostgres(AuditedUpsert):
     # 2) remove all the remote and redshifty things from the COPY command
     # 3) the ingest result tables are redshift-specific. so we'll just stub that out.
 
-    def __init__(self, file_path, destination):
+    def __init__(self, file_path, destination, **kwargs):
         local_file_path = S3File(file_path).download_to_temp()
-        super().__init__(local_file_path, destination)
+        super().__init__(local_file_path, destination, **kwargs)
+        if self.with_manifest:
+            raise ValueError("Postgres cannot handle manifests like redshift. Sorry. ")
 
     def ingest(self):
         with open(self.file_path) as local_file:
