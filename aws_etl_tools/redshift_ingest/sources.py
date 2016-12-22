@@ -3,6 +3,7 @@ from datetime import datetime
 import subprocess
 import csv
 
+from aws_etl_tools.guard import requires_s3_base_path
 from aws_etl_tools.s3_file import S3File
 from aws_etl_tools import config
 
@@ -14,6 +15,7 @@ def s3_to_redshift(s3_file, destination, **ingestion_args):
     ingestor()
 
 
+@requires_s3_base_path
 def from_manifest(manifest, destination, **ingestion_args):
     '''From a dict that can be jsonified and uploaded to S3. For more info on manifests,
        see http://docs.aws.amazon.com/redshift/latest/dg/loading-data-files-using-manifest.html'''
@@ -33,6 +35,7 @@ def from_s3_path(s3_path, destination):
     from_s3_file(s3_file, destination)
 
 
+@requires_s3_base_path
 def from_local_file(file_path, destination):
     '''Assumes a CSV'''
     s3_path = _transient_s3_path(destination) + '.csv'
@@ -41,6 +44,7 @@ def from_local_file(file_path, destination):
     from_s3_file(s3_file, destination)
 
 
+@requires_s3_base_path
 def from_in_memory(data, destination):
     '''Assumes an iterable of iterables, e.g. a list of tuples'''
     file_path = _transient_local_path(destination) + '.csv'
@@ -52,6 +56,7 @@ def from_in_memory(data, destination):
     from_local_file(file_path, destination)
 
 
+@requires_s3_base_path
 def from_dataframe(dataframe, destination, **df_kwargs):
     file_path = _transient_local_path(destination) + '.csv'
     arguments = {
@@ -64,6 +69,7 @@ def from_dataframe(dataframe, destination, **df_kwargs):
     from_local_file(file_path, destination)
 
 
+@requires_s3_base_path
 def from_postgres_query(database, query, destination):
     file_path = _transient_local_path(destination) + '.csv'
     with open(file_path, 'w') as f:
@@ -88,6 +94,7 @@ def _transient_local_path(destination):
     return os.path.join(config.LOCAL_TEMP_DIRECTORY, file_name)
 
 
+@requires_s3_base_path
 def _transient_s3_path(destination):
     base_s3_path = config.S3_BASE_PATH
     s3_subpath = _s3_ingest_subpath(destination)

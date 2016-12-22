@@ -16,9 +16,10 @@ from . import settings
 S3_TEST_BUCKET_NAME = settings.S3_TEST_BUCKET_NAME
 
 
-s3_base_path = 's3://{}'.format(S3_TEST_BUCKET_NAME)
-os.environ[config.S3_BASE_PATH_ENV_VAR_KEY] = s3_base_path
-reload(config)
+def set_default_s3_base_path():
+    s3_base_path = 's3://{}'.format(S3_TEST_BUCKET_NAME)
+    os.environ[config.S3_BASE_PATH_ENV_VAR_KEY] = s3_base_path
+    reload(config)
 
 
 def clear_temp_directory():

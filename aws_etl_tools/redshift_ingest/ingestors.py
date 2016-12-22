@@ -201,7 +201,7 @@ class AuditedUpsertToPostgres(AuditedUpsert):
         local_file_path = S3File(file_path).download_to_temp()
         super().__init__(local_file_path, destination, **kwargs)
         if self.with_manifest:
-            raise ValueError("Postgres cannot handle manifests like redshift. Sorry. ")
+            raise ValueError("Postgres cannot handle manifests like redshift. Sorry.")
 
     def ingest(self):
         with open(self.file_path) as local_file:

@@ -26,6 +26,7 @@ class TestRedshiftIngestManifest(unittest.TestCase):
         table=TABLENAME,
         timestamp='2015_11_30_22_36_43'
     )
+    test_helper.set_default_s3_base_path()
 
     def tearDown(self):
         test_helper.clear_temp_directory()

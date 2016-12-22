@@ -9,7 +9,7 @@ from tests import test_helper
 from aws_etl_tools.mock_s3_connection import MockS3Connection
 from aws_etl_tools import config
 from aws_etl_tools.s3_file import S3File, S3RelativeFilePath, upload_local_file_to_s3_path
-from aws_etl_tools.exceptions import NoDataFoundError
+from aws_etl_tools.exceptions import NoDataFoundError, NoS3BasePathError
 
 
 class TestS3FileFromFullPath(unittest.TestCase):
@@ -114,35 +114,22 @@ class TestS3FileFromFullPath(unittest.TestCase):
 
 class TestS3RelativeFilePath(unittest.TestCase):
 
-    SUB_PATH = 'ima/little/teapot'
-    S3_BUCKET_NAME = 'test-s3-bucket'
-    CUSTOM_BASE_PATH = 's3://{bucket}/edible/food'.format(bucket=S3_BUCKET_NAME)
-    EXPECTED_CUSTOM_S3_PATH = os.path.join(CUSTOM_BASE_PATH, SUB_PATH)
-    DEFAULT_BASE_PATH = config.S3_BASE_PATH
-    EXPECTED_DEFAULT_S3_PATH = os.path.join(DEFAULT_BASE_PATH, SUB_PATH)
+    CUSTOM_BASE_PATH = 's3://exciting-bucket/of'
+    SUB_PATH = 'louisiana/fried/chicken'
+    EXPECTED_S3_PATH = 's3://exciting-bucket/of/louisiana/fried/chicken'
 
-    def setUp(self):
-        self.previous_s3_base_path_env = os.environ[config.S3_BASE_PATH_ENV_VAR_KEY]
-
-    def tearDown(self):
-        os.environ[config.S3_BASE_PATH_ENV_VAR_KEY] = self.previous_s3_base_path_env
-        reload(config)
-
-
-    def test_s3_path_with_environment_variable_set(self):
-        os.environ[config.S3_BASE_PATH_ENV_VAR_KEY] = self.CUSTOM_BASE_PATH
-        reload(config)
+    def test_s3_path_with_s3_base_path_works_as_expected(self):
+        config.S3_BASE_PATH = self.CUSTOM_BASE_PATH
 
         actual_s3_path = S3RelativeFilePath(self.SUB_PATH).s3_path
 
-        self.assertEqual(self.EXPECTED_CUSTOM_S3_PATH, actual_s3_path)
+        self.assertEqual(self.EXPECTED_S3_PATH, actual_s3_path)
 
 
-    def test_s3_path_without_environment_variable_set_raises(self):
-        del(os.environ[config.S3_BASE_PATH_ENV_VAR_KEY])
-        reload(config)
+    def test_s3_path_without_s3_base_path_raises(self):
+        config.S3_BASE_PATH = None
 
-        with self.assertRaises(BaseException):
+        with self.assertRaises(NoS3BasePathError):
             actual_s3_path = S3RelativeFilePath(self.SUB_PATH).s3_path
 
 
@@ -188,6 +175,7 @@ class TestS3FileFromPathObject(unittest.TestCase):
 
 
 class TestS3JsonFileFromDict(unittest.TestCase):
+
     S3_BUCKET_NAME = 'test-s3-bucket'
     S3_PATH = 's3://{bucket}/namespace/configuration.json'.format(bucket=S3_BUCKET_NAME)
     DATA = {'foo': 'bar', 'baz': 6, 'jim': False}
