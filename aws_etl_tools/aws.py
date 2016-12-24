@@ -21,11 +21,15 @@ class AWS:
         build up a connection_string which is used primarily in Redshift commands like
         `COPY` from s3 and `UNLOAD` to s3.
     '''
+    PUBLICLY_LISTABLE_S3_BUCKET = 'example-publicly-accessible'
 
     def __init__(self, **kwargs):
         try:
             self._connect_with_permanent_credentials(**kwargs)
-            testable_bucket_name = config.S3_BASE_PATH.replace('s3://', '').split('/')[0]
+            if config.S3_BASE_PATH:
+                testable_bucket_name = config.S3_BASE_PATH.replace('s3://', '').split('/')[0]
+            else:
+                testable_bucket_name = self.PUBLICLY_LISTABLE_S3_BUCKET
             self.s3_connection().get_bucket(testable_bucket_name)
         except (BotoServerError, BotoClientError):
             self._connect_with_temporary_credentials()

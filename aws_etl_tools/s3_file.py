@@ -7,6 +7,7 @@ from boto.s3.key import Key
 from aws_etl_tools.aws import AWS
 from aws_etl_tools import config
 from aws_etl_tools.exceptions import NoDataFoundError
+from aws_etl_tools.guard import requires_s3_base_path
 
 
 def parse_s3_path(s3_path):
@@ -117,6 +118,7 @@ class S3RelativeFilePath:
         self.sub_path = sub_path
 
     @property
+    @requires_s3_base_path
     def base_path(self):
         return config.S3_BASE_PATH
 

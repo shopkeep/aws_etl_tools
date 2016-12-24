@@ -31,7 +31,8 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
                 value varchar(20)
             )""" % self.TARGET_TABLE
         )
-        reload(config)
+        test_helper.set_default_s3_base_path()
+
 
     def tearDown(self):
         self.TARGET_DATABASE.execute("""DROP TABLE %s""" % self.TARGET_TABLE)
@@ -119,7 +120,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
     def test_manifest_to_redshift_raises_value_error(self):
         '''This cannot be integration tested because Postgres cannot trivially
             be made to handle manifest files.'''
-        expected_exception_args = ('Postgres cannot handle manifests like redshift. Sorry. ',)
+        expected_exception_args = ('Postgres cannot handle manifests like redshift. Sorry.',)
         manifest_dict = { "entries": [{"url": 's3://this/doesnt/matter.manifest', "mandatory": True}] }
 
         with self.assertRaises(ValueError) as exception_context_manager:
