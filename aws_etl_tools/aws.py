@@ -1,15 +1,15 @@
 import json
 from urllib.request import urlopen
 
-import boto
-from boto.exception import BotoServerError, BotoClientError
+import boto3
+from botocore.exceptions import ClientError
 from botocore.utils import METADATA_SECURITY_CREDENTIALS_URL
 
 from aws_etl_tools import config
 
 
 class AWS:
-    '''this class is wrapping the boto s3_connection object with
+    '''this class is wrapping the boto3 connection object with
         some extra attempts to make connecting as easy as possible.
         to override those, instantiate it like this:
         >> AWS(aws_access_key_id='brownie_recipe', secret_access_key='peanut_butter')
@@ -30,8 +30,8 @@ class AWS:
                 testable_bucket_name = config.S3_BASE_PATH.replace('s3://', '').split('/')[0]
             else:
                 testable_bucket_name = self.PUBLICLY_LISTABLE_S3_BUCKET
-            self.s3_connection().get_bucket(testable_bucket_name)
-        except (BotoServerError, BotoClientError):
+            self.s3_connection().meta.client.head_bucket(Bucket=testable_bucket_name)
+        except botocore.exceptions.ClientError:
             self._connect_with_temporary_credentials()
 
     def connection_string(self):
@@ -42,9 +42,10 @@ class AWS:
         return aws_credential_string
 
     def s3_connection(self):
-        return boto.connect_s3(aws_access_key_id=self.key,
-                               aws_secret_access_key=self.secret,
-                               security_token=self.token)
+        return boto3.resource('s3',
+            aws_access_key_id=self.key,
+            aws_secret_access_key=self.secret,
+            aws_session_token=self.token)
 
     def _connect_with_permanent_credentials(self, **kwargs):
         '''creates a connection to s3 through boto using a set key and secret
@@ -53,13 +54,13 @@ class AWS:
             default location'''
         possibly_valid_key = kwargs.get('aws_access_key_id', config.AWS_ACCESS_KEY_ID)
         possibly_valid_secret = kwargs.get('aws_secret_access_key', config.AWS_SECRET_ACCESS_KEY)
-        local_aws_connection = boto.connect_s3(
-            aws_access_key_id=possibly_valid_key,
-            aws_secret_access_key=possibly_valid_secret,
-            **kwargs
-        )
-        self.key = local_aws_connection.aws_access_key_id
-        self.secret = local_aws_connection.aws_secret_access_key
+        local_aws_session = boto3.Session(aws_access_key_id=possibly_valid_key,
+                                          aws_secret_access_key=possibly_valid_secret,
+                                          aws_session_token=self.token,
+                                          **kwargs)
+        local_aws_credentials = local_aws_session.get_credentials()
+        self.key = local_aws_credentials.access_key
+        self.secret = local_aws_credentials.secret_key
         self.token = None
 
     def _connect_with_temporary_credentials(self):

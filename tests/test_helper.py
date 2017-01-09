@@ -2,7 +2,6 @@ import glob
 import os
 from importlib import reload
 
-import boto
 from moto import mock_s3
 from unittest.mock import Mock
 

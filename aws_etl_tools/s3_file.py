@@ -2,7 +2,7 @@ import csv
 import json
 import os
 
-from boto.s3.key import Key
+import boto3
 
 from aws_etl_tools.aws import AWS
 from aws_etl_tools import config
@@ -19,12 +19,17 @@ def parse_s3_path(s3_path):
 
 def upload_local_file_to_s3_path(local_path, s3_path):
     bucket_name, key_name, _ = parse_s3_path(s3_path)
-    s3_bucket = AWS().s3_connection().get_bucket(bucket_name)
-    s3_key_object = Key(s3_bucket)
-    s3_key_object.key = key_name
-    s3_key_object.set_contents_from_filename(local_path)
-    if s3_key_object.size == 0:
+    # s3_bucket = AWS().s3_connection().get_bucket(bucket_name)
+    # s3_key_object = Key(s3_bucket)
+    # s3_key_object.key = key_name
+    # s3_key_object.set_contents_from_filename(local_path)
+    s3 = AWS().s3_connection()
+    s3.upload_file(local_path, bucket_name, key_name)
+    if s3.Object(bucket_name, key_name).content_length == 0:
         raise NoDataFoundError('The file you\'ve uploaded to S3 has a size of 0 KB')
+
+
+
 
 def upload_data_to_s3_path(data, s3_path):
     ''' takes some data, writes it locally to a CSV, and then uploads that to s3.
@@ -37,10 +42,8 @@ def upload_data_to_s3_path(data, s3_path):
 
 def download_from_s3_to_local_file(s3_path, local_path):
     bucket_name, key_name, file_name = parse_s3_path(s3_path)
-    s3_bucket = AWS().s3_connection().get_bucket(bucket_name)
-    s3_key_object = Key(s3_bucket)
-    s3_key_object.key = key_name
-    s3_key_object.get_contents_to_filename(local_path)
+    s3_bucket = AWS().s3_connection().Bucket(bucket_name)
+    s3_bucket.download_file(key_name, local_path)
 
 def _write_data_to_local_csv(data, local_path):
     with open(local_path, 'w') as f:
@@ -60,9 +63,9 @@ class S3File:
 
     @property
     def file_size(self):
-        s3_bucket = AWS().s3_connection().get_bucket(self.bucket_name)
-        s3_key = s3_bucket.get_key(self.key_name)
-        return s3_key.size if s3_key else 0
+        s3_bucket = AWS().s3_connection().Bucket(self.bucket_name)
+        s3_object = s3.Object(bucket_name, key_name)
+        return s3_object.content_length if s3_key else 0
 
     def download(self, destination_path):
         download_from_s3_to_local_file(self.s3_path, destination_path)
