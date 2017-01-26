@@ -31,7 +31,7 @@ class AWS:
             else:
                 testable_bucket_name = self.PUBLICLY_LISTABLE_S3_BUCKET
             self.s3_connection().meta.client.head_bucket(Bucket=testable_bucket_name)
-        except botocore.exceptions.ClientError:
+        except ClientError:
             self._connect_with_temporary_credentials()
 
     def connection_string(self):
@@ -42,10 +42,9 @@ class AWS:
         return aws_credential_string
 
     def s3_connection(self):
-        return boto3.resource('s3',
-            aws_access_key_id=self.key,
-            aws_secret_access_key=self.secret,
-            aws_session_token=self.token)
+        return boto3.resource('s3', aws_access_key_id=self.key,
+                                    aws_secret_access_key=self.secret,
+                                    aws_session_token=self.token)
 
     def _connect_with_permanent_credentials(self, **kwargs):
         '''creates a connection to s3 through boto using a set key and secret
@@ -56,7 +55,6 @@ class AWS:
         possibly_valid_secret = kwargs.get('aws_secret_access_key', config.AWS_SECRET_ACCESS_KEY)
         local_aws_session = boto3.Session(aws_access_key_id=possibly_valid_key,
                                           aws_secret_access_key=possibly_valid_secret,
-                                          aws_session_token=self.token,
                                           **kwargs)
         local_aws_credentials = local_aws_session.get_credentials()
         self.key = local_aws_credentials.access_key
