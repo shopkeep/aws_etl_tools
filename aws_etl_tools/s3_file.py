@@ -26,9 +26,6 @@ def upload_local_file_to_s3_path(local_path, s3_path):
     if s3_file.content_length == 0:
         raise NoDataFoundError('The file you\'ve uploaded to S3 has a size of 0 KB')
 
-
-
-
 def upload_data_to_s3_path(data, s3_path):
     ''' takes some data, writes it locally to a CSV, and then uploads that to s3.
     `data`: a simple iterable of iterables: e.g. a list of tuples

@@ -42,7 +42,6 @@ class TestAWSConnectionString(unittest.TestCase):
         client_property = PropertyMock(return_value=client_mock)
         type(meta_mock).client = client_property
         mock_boto_resource.return_value = mock_resource
-
         mock_aws_request.return_value = {
             'AccessKeyId': 'aws_mock_key',
             'SecretAccessKey': 'aws_mock_secret',
