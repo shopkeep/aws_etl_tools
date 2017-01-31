@@ -1,7 +1,7 @@
 from functools import wraps
 from importlib import reload
 
-import boto
+import boto3
 from moto import mock_s3
 
 from aws_etl_tools import config
@@ -25,8 +25,8 @@ class MockS3Connection:
         def with_mock_s3_connection(*args, **kwargs):
             mock = mock_s3()
             mock.start()
-            s3_connection = boto.connect_s3()
-            s3_connection.create_bucket(self.bucket)
+            s3_connection = boto3.resource('s3')
+            s3_connection.create_bucket(Bucket=self.bucket)
             return function(*args, **kwargs)
 
         return with_mock_s3_connection

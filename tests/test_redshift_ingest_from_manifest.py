@@ -3,7 +3,7 @@ import csv
 import unittest
 from unittest.mock import patch, Mock
 
-import boto
+import boto3
 from freezegun import freeze_time
 
 from aws_etl_tools.mock_s3_connection import MockS3Connection
@@ -36,8 +36,8 @@ class TestRedshiftIngestManifest(unittest.TestCase):
         file_contents = '5,funzies\n7,sadzies\n'
         s3_bucket_name = test_helper.S3_TEST_BUCKET_NAME
         s3_key_name = 'namespaced/file/data.csv'
-        s3_bucket = boto.connect_s3().get_bucket(s3_bucket_name)
-        s3_bucket.new_key(s3_key_name).set_contents_from_string(file_contents)
+        s3 = boto3.resource('s3')
+        s3.Object(s3_bucket_name, s3_key_name).put(Body=file_contents)
         full_s3_path = 's3://' + s3_bucket_name + '/' + s3_key_name
         # create a manifest that includes that file
         return { "entries": [{"url": full_s3_path, "mandatory": True}] }
