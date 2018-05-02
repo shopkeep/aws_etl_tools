@@ -47,7 +47,7 @@ destination = RedshiftTable(
     target_table='foods.v1_candy_names',
     upsert_uniqueness_key=('id',)
 )
-from_in_memory(source_data, self.DESTINATION)
+from_in_memory(source_data, destination)
 ```
 `from_in_memory` is going to do a bunch of things for you. It will take your list of tuples and write them to a local temp file, upload that file to a location nested under the `s3_base_path` that you've configured, and then run through the ingestion logic defined on your database object (or the default logic which can be found in `ingestors.py`)
 #### from_manifest
