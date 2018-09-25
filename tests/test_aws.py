@@ -11,7 +11,7 @@ from tests import test_helper
 
 class TestAWSConnectionString(unittest.TestCase):
 
-    LOCAL_CONNECTION_STRING = 'aws_access_key_id=aws_mock_key;aws_secret_access_key=aws_mock_secret'
+    LOCAL_CONNECTION_STRING = 'aws_access_key_id=aws_mock_key;aws_secret_access_key=aws_mock_secret;token=aws_mock_token'
     EC2_CONNECTION_STRING = 'aws_access_key_id=aws_mock_key;aws_secret_access_key=aws_mock_secret;token=aws_mock_token'
 
     @patch.object(boto3, 'resource')
@@ -20,8 +20,10 @@ class TestAWSConnectionString(unittest.TestCase):
         mock_aws_credentials = Mock()
         key_property = PropertyMock(return_value='aws_mock_key')
         secret_property = PropertyMock(return_value='aws_mock_secret')
+        token_property = PropertyMock(return_value='aws_mock_token')
         type(mock_aws_credentials).access_key = key_property
         type(mock_aws_credentials).secret_key = secret_property
+        type(mock_aws_credentials).token = token_property
         mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
 
         connection_string = AWS().connection_string()
