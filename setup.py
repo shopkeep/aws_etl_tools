@@ -7,7 +7,7 @@ running_requirements =[
     'Cython==0.24.1',
     'httpretty==0.8.10',
     'pandas>=0.14.0',
-    'psycopg2==2.6',
+    'psycopg2==2.7',
     'requests==2.7.0',
     'SQLAlchemy==1.0.5'
 ]
