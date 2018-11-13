@@ -20,7 +20,7 @@ LOCAL_TEMP_DIRECTORY = os.path.join(os.path.dirname(__file__), 'tmp')
 # the IAM role of the instance.
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ETL_TOOLS_AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_ETL_TOOLS_AWS_SECRET_ACCESS_KEY')
-
+AWS_SESSION_TOKEN = os.getenv('AWS_ETL_TOOLS_AWS_SESSION_TOKEN')
 
 try:
     from local_config import *

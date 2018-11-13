@@ -53,13 +53,15 @@ class AWS:
             default location'''
         possibly_valid_key = kwargs.get('aws_access_key_id', config.AWS_ACCESS_KEY_ID)
         possibly_valid_secret = kwargs.get('aws_secret_access_key', config.AWS_SECRET_ACCESS_KEY)
+        possibly_valid_token = kwargs.get('aws_session_token', config.AWS_SESSION_TOKEN)
         local_aws_session = boto3.Session(aws_access_key_id=possibly_valid_key,
                                           aws_secret_access_key=possibly_valid_secret,
+                                          aws_session_token=possibly_valid_token,
                                           **kwargs)
         local_aws_credentials = local_aws_session.get_credentials()
         self.key = local_aws_credentials.access_key
         self.secret = local_aws_credentials.secret_key
-        self.token = None
+        self.token = local_aws_credentials.token
 
     def _connect_with_temporary_credentials(self):
         credentials_from_iam_role = self._request_temporary_credentials()
