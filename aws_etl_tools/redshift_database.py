@@ -6,7 +6,7 @@ from aws_etl_tools.redshift_ingest.ingestors import BasicUpsert
 class RedshiftDatabase(PostgresDatabase):
     ingestion_class = BasicUpsert
 
-    def unload(self, query, s3_path, delimiter='|', is_parallel_unload=False, allow_overwrite=False, add_quotes=False, escape=False):
+    def unload(self, query, s3_path, delimiter='|', is_parallel_unload=False, allow_overwrite=False, add_quotes=False, escape=False, header=False):
         '''Unloads a query on this database to an s3_path.
             `is_parallel_unload` is good for unloading to multiple files with a
             manifest when you know you will be loading this data back into redshift
@@ -24,7 +24,8 @@ class RedshiftDatabase(PostgresDatabase):
             'allow_overwrite': allow_overwrite,
             'delimiter': delimiter,
             'add_quotes': add_quotes,
-            'escape': escape
+            'escape': escape,
+            'header': header
         }
 
         unload_query = self._compose_unload_query(query, s3_path, options)
@@ -36,6 +37,7 @@ class RedshiftDatabase(PostgresDatabase):
         query_commands.append('DELIMITER \'%s\'' % options.get('delimiter'))
         query_commands.append('ADDQUOTES') if options.get('add_quotes', False) else None
         query_commands.append('ESCAPE') if options.get('escape', False) else None
+        query_commands.append('HEADER') if options.get('header', False) else None
 
         unload_query_options = ' '.join(query_commands).strip()
 

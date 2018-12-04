@@ -21,6 +21,7 @@ class TestRedshiftDatabase(unittest.TestCase):
     EXPECTED_SINGLE_UNLOAD_WITH_OVERWRITE = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF ALLOWOVERWRITE DELIMITER '|';"
     EXPECTED_SINGLE_UNLOAD_WITH_ADDQUOTES = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' ADDQUOTES;"
     EXPECTED_SINGLE_UNLOAD_WITH_ESCAPE = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' ESCAPE;"
+    EXPECTED_SINGLE_UPLOAD_WITH_HEADER = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' HEADER;"
 
     @patch.object(RedshiftDatabase, 'execute')
     @patch('aws_etl_tools.redshift_database.AWS')
@@ -67,3 +68,12 @@ class TestRedshiftDatabase(unittest.TestCase):
         self.REDSHIFT_DATABASE.unload(self.DOWNLOAD_QUERY, self.S3_PATH, escape=True)
 
         self.REDSHIFT_DATABASE.execute.assert_called_once_with(self.EXPECTED_SINGLE_UNLOAD_WITH_ESCAPE)
+
+    @patch.object(RedshiftDatabase, 'execute')
+    @patch('aws_etl_tools.redshift_database.AWS')
+    def test_unload_with_header_on(self, mock_aws, _):
+        mock_aws.return_value.connection_string.return_value = self.AWS_CONNECTION_CREDENTIALS
+
+        self.REDSHIFT_DATABASE.unload(self.DOWNLOAD_QUERY, self.S3_PATH, header=True)
+
+        self.REDSHIFT_DATABASE.execute.assert_called_once_with(self.EXPECTED_SINGLE_UPLOAD_WITH_HEADER)
