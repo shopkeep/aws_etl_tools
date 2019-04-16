@@ -22,6 +22,8 @@ class TestRedshiftDatabase(unittest.TestCase):
     EXPECTED_SINGLE_UNLOAD_WITH_ADDQUOTES = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' ADDQUOTES;"
     EXPECTED_SINGLE_UNLOAD_WITH_ESCAPE = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' ESCAPE;"
     EXPECTED_SINGLE_UPLOAD_WITH_HEADER = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' HEADER;"
+    EXPECTED_SINGLE_UPLOAD_WITH_COMPRESSION_TYPE = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' ZSTD;"
+    EXPECTED_SINGLE_UPLOAD_WITH_MAX_FILE_SIZE = "UNLOAD ('SELECT * FROM funzies') TO 's3://useful-things-bucket/klaatu/barada/nikto/test_s3_upload_file.csv' CREDENTIALS 'faux_aws_credentials' PARALLEL OFF DELIMITER '|' MAXFILESIZE 100 MB;"
 
     @patch.object(RedshiftDatabase, 'execute')
     @patch('aws_etl_tools.redshift_database.AWS')
@@ -77,3 +79,21 @@ class TestRedshiftDatabase(unittest.TestCase):
         self.REDSHIFT_DATABASE.unload(self.DOWNLOAD_QUERY, self.S3_PATH, header=True)
 
         self.REDSHIFT_DATABASE.execute.assert_called_once_with(self.EXPECTED_SINGLE_UPLOAD_WITH_HEADER)
+
+    @patch.object(RedshiftDatabase, 'execute')
+    @patch('aws_etl_tools.redshift_database.AWS')
+    def test_unload_with_compression_type(self, mock_aws, _):
+        mock_aws.return_value.connection_string.return_value = self.AWS_CONNECTION_CREDENTIALS
+
+        self.REDSHIFT_DATABASE.unload(self.DOWNLOAD_QUERY, self.S3_PATH, compression_type='ZSTD')
+
+        self.REDSHIFT_DATABASE.execute.assert_called_once_with(self.EXPECTED_SINGLE_UPLOAD_WITH_COMPRESSION_TYPE)
+
+    @patch.object(RedshiftDatabase, 'execute')
+    @patch('aws_etl_tools.redshift_database.AWS')
+    def test_unload_with_max_file_size(self, mock_aws, _):
+        mock_aws.return_value.connection_string.return_value = self.AWS_CONNECTION_CREDENTIALS
+
+        self.REDSHIFT_DATABASE.unload(self.DOWNLOAD_QUERY, self.S3_PATH, max_file_size='100 MB')
+
+        self.REDSHIFT_DATABASE.execute.assert_called_once_with(self.EXPECTED_SINGLE_UPLOAD_WITH_MAX_FILE_SIZE)
