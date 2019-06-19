@@ -3,7 +3,7 @@ from urllib.request import urlopen
 
 import boto3
 from botocore.exceptions import ClientError
-from botocore.utils import METADATA_SECURITY_CREDENTIALS_URL
+from botocore.utils import METADATA_BASE_URL as METADATA_SECURITY_CREDENTIALS_URL
 
 from aws_etl_tools import config
 
