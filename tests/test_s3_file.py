@@ -5,8 +5,6 @@ import os
 import unittest
 from unittest.mock import Mock
 
-from moto import mock_s3
-
 from tests import test_helper
 from aws_etl_tools.mock_s3_connection import MockS3Connection
 from aws_etl_tools import config
@@ -16,7 +14,7 @@ from aws_etl_tools.exceptions import NoDataFoundError, NoS3BasePathError
 
 class TestS3FileFromFullPath(unittest.TestCase):
 
-    S3_BUCKET_NAME = test_helper.S3_TEST_BUCKET_NAME
+    S3_BUCKET_NAME = 'test-s3-bucket'
     S3_KEY_NAME = 'ye/test/key.csv'
     S3_FILE_NAME = S3_KEY_NAME.split('/')[-1]
     S3_PATH = 's3://' + S3_BUCKET_NAME + '/' + S3_KEY_NAME
