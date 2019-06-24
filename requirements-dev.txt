@@ -1,8 +1,8 @@
 httpretty==0.8.10
 requests==2.7.0
 boto==2.45.0
-boto3==1.9.171
-botocore==1.12.171
+boto3==1.7.84
+botocore==1.10.84
 psycopg2==2.7
 SQLAlchemy==1.0.5
 Cython==0.24.1

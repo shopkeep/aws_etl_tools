@@ -17,6 +17,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
     TARGET_TABLE = 'public.testing_channels'
     AUDIT_TABLE = config.REDSHIFT_INGEST_AUDIT_TABLE
     EXPECTED_COUNT_OF_AUDIT_FIELDS = 5
+    S3_BUCKET_NAME = test_helper.S3_TEST_BUCKET_NAME
     TARGET_DATABASE = test_helper.BasicRedshiftButActuallyPostgres()
     DESTINATION = RedshiftTable(
         database=TARGET_DATABASE,
@@ -50,7 +51,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assertEqual(actual_count_of_audit_fields, self.EXPECTED_COUNT_OF_AUDIT_FIELDS)
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_in_memory_data_to_redshift(self):
         source_data = [[5, 'funzies'], [7, 'sadzies']]
 
@@ -60,7 +61,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_dataframe_to_redshift(self):
         source_dataframe = pd.DataFrame(
             [(5, 'funzies'), (7, 'sadzies')],
@@ -74,7 +75,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_postgres_query_to_redshift(self):
         source_db = test_helper.BasicPostgres()
         source_query = """
@@ -88,7 +89,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_local_file_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         file_path = os.path.join(config.LOCAL_TEMP_DIRECTORY, 'csv_data.csv')
@@ -101,7 +102,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_s3_path_to_redshift(self):
         file_contents = '5,funzies\n7,sadzies\n'
         s3_bucket_name = test_helper.S3_TEST_BUCKET_NAME
@@ -116,7 +117,7 @@ class TestRedshiftIngestIntegration(unittest.TestCase):
         self.assert_audit_row_created()
 
 
-    @MockS3Connection()
+    @MockS3Connection(bucket=S3_BUCKET_NAME)
     def test_manifest_to_redshift_raises_value_error(self):
         '''This cannot be integration tested because Postgres cannot trivially
             be made to handle manifest files.'''
