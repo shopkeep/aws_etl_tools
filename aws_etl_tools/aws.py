@@ -31,6 +31,7 @@ class AWS:
             else:
                 testable_bucket_name = self.PUBLICLY_LISTABLE_S3_BUCKET
             self.s3_connection().meta.client.head_bucket(Bucket=testable_bucket_name)
+            self.comprehend_connection().detect_dominant_language(Text='test-string')
         except ClientError:
             self._connect_with_temporary_credentials()
 
@@ -46,6 +47,12 @@ class AWS:
                                     aws_secret_access_key=self.secret,
                                     aws_session_token=self.token)
 
+    def comprehend_connection(self):
+        return boto3.client('comprehend', aws_access_key_id=self.key,
+                                    aws_secret_access_key=self.secret,
+                                    aws_session_token=self.token,
+                                    region_name=self.region_name)
+
     def _connect_with_permanent_credentials(self, **kwargs):
         '''creates a connection to s3 through boto using a set key and secret
             that is either passed in explicitly, set through environment
@@ -54,20 +61,24 @@ class AWS:
         possibly_valid_key = kwargs.get('aws_access_key_id', config.AWS_ACCESS_KEY_ID)
         possibly_valid_secret = kwargs.get('aws_secret_access_key', config.AWS_SECRET_ACCESS_KEY)
         possibly_valid_token = kwargs.get('aws_session_token', config.AWS_SESSION_TOKEN)
+        possibly_valid_region = kwargs.get('region_name', config.AWS_DEFAULT_REGION)
         local_aws_session = boto3.Session(aws_access_key_id=possibly_valid_key,
                                           aws_secret_access_key=possibly_valid_secret,
                                           aws_session_token=possibly_valid_token,
+                                          region_name=possibly_valid_region,
                                           **kwargs)
         local_aws_credentials = local_aws_session.get_credentials()
         self.key = local_aws_credentials.access_key
         self.secret = local_aws_credentials.secret_key
         self.token = local_aws_credentials.token
+        self.region_name = local_aws_session.region_name
 
     def _connect_with_temporary_credentials(self):
         credentials_from_iam_role = self._request_temporary_credentials()
         self.key = credentials_from_iam_role['AccessKeyId']
         self.secret = credentials_from_iam_role['SecretAccessKey']
         self.token = credentials_from_iam_role['Token']
+        self.region_name = config.AWS_DEFAULT_REGION
 
     def _request_temporary_credentials(self):
         aws_iam_base_url = METADATA_SECURITY_CREDENTIALS_URL
