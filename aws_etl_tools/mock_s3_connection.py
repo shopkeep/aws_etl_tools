@@ -22,9 +22,8 @@ class MockS3Connection:
 
     def __call__(self, function):
         @wraps(function)
+        @mock_s3()
         def with_mock_s3_connection(*args, **kwargs):
-            mock = mock_s3()
-            mock.start()
             s3_connection = boto3.resource('s3')
             s3_connection.create_bucket(Bucket=self.bucket)
             return function(*args, **kwargs)
