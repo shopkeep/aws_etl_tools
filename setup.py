@@ -2,8 +2,8 @@ from setuptools import setup, find_packages
 
 
 running_requirements =[
-    'boto3==1.4.4',
-    'botocore==1.3.29',
+    'boto3==1.7.84',
+    'botocore==1.10.84',
     'Cython==0.24.1',
     'httpretty==0.8.10',
     'pandas>=0.14.0',
