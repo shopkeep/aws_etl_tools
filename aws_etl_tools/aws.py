@@ -54,7 +54,7 @@ class AWS:
                                     region_name=self.region_name)
 
     def _connect_with_permanent_credentials(self, **kwargs):
-        '''creates a connection to s3 through boto using a set key and secret
+        '''creates an aws session through boto using a set key and secret
             that is either passed in explicitly, set through environment
             variables in config, or set in a boto configuration file in the
             default location'''

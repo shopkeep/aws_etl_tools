@@ -21,9 +21,11 @@ class TestAWSConnectionString(unittest.TestCase):
         key_property = PropertyMock(return_value='aws_mock_key')
         secret_property = PropertyMock(return_value='aws_mock_secret')
         token_property = PropertyMock(return_value='aws_mock_token')
+        region_property = PropertyMock(return_value='aws_mock_region_name')
         type(mock_aws_credentials).access_key = key_property
         type(mock_aws_credentials).secret_key = secret_property
         type(mock_aws_credentials).token = token_property
+        type(mock_aws_credentials).region = region_property
         mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
 
         connection_string = AWS().connection_string()
