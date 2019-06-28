@@ -31,7 +31,6 @@ class AWS:
             else:
                 testable_bucket_name = self.PUBLICLY_LISTABLE_S3_BUCKET
             self.s3_connection().meta.client.head_bucket(Bucket=testable_bucket_name)
-            self.comprehend_connection().detect_dominant_language(Text='test-string')
         except ClientError:
             self._connect_with_temporary_credentials()
 

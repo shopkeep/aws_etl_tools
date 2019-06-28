@@ -119,12 +119,11 @@ class TestAWSConnection(unittest.TestCase):
         mock_comprehend_connection = Mock()
         mock_boto_client.return_value = mock_comprehend_connection
 
-        expected_calls = [
+        expected_call = [
             call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name'),
-            call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name')
         ]
 
         comprehend_connection = AWS().comprehend_connection()
 
         self.assertEqual(comprehend_connection, mock_comprehend_connection)
-        mock_boto_client.assert_has_calls(expected_calls, any_order=True)
+        mock_boto_client.assert_has_calls(expected_call, any_order=True)
