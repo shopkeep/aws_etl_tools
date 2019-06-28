@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, PropertyMock, patch
+from unittest.mock import Mock, PropertyMock, patch, call
 
 import boto3
 import botocore
@@ -21,11 +21,9 @@ class TestAWSConnectionString(unittest.TestCase):
         key_property = PropertyMock(return_value='aws_mock_key')
         secret_property = PropertyMock(return_value='aws_mock_secret')
         token_property = PropertyMock(return_value='aws_mock_token')
-        region_property = PropertyMock(return_value='aws_mock_region_name')
         type(mock_aws_credentials).access_key = key_property
         type(mock_aws_credentials).secret_key = secret_property
         type(mock_aws_credentials).token = token_property
-        type(mock_aws_credentials).region = region_property
         mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
 
         connection_string = AWS().connection_string()
@@ -71,3 +69,62 @@ class TestInitWithoutS3BasePath(unittest.TestCase):
             aws_object = AWS().s3_connection()
         except Exception as e:
             self.fail("AWS() unexpectedly raised an exception related to S3_BASE_PATH: `{}`".format(e))
+
+
+class TestAWSConnection(unittest.TestCase):
+
+    @patch.object(boto3, 'resource')
+    @patch.object(boto3, 'Session')
+    def test_initializes_and_returns_s3_connection(self, mock_boto_session, mock_boto_resource):
+        mock_aws_credentials = Mock()
+        key_property = PropertyMock(return_value='aws_mock_key')
+        secret_property = PropertyMock(return_value='aws_mock_secret')
+        token_property = PropertyMock(return_value='aws_mock_token')
+        type(mock_aws_credentials).access_key = key_property
+        type(mock_aws_credentials).secret_key = secret_property
+        type(mock_aws_credentials).token = token_property
+        mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
+
+        mock_s3_connection = Mock()
+        mock_boto_resource.return_value = mock_s3_connection
+
+        expected_calls = [
+            call('s3', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token'),
+            call('s3', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token')
+        ]
+
+        s3_connection = AWS().s3_connection()
+
+        self.assertEqual(s3_connection, mock_s3_connection)
+        mock_boto_resource.assert_has_calls(expected_calls, any_order=True)
+
+    @patch.object(boto3, 'resource')
+    @patch.object(boto3, 'client')
+    @patch.object(boto3, 'Session')
+    def test_initializes_and_returns_comprehend_connection(self, mock_boto_session, mock_boto_client, _):
+        mock_aws_credentials = Mock()
+        key_property = PropertyMock(return_value='aws_mock_key')
+        secret_property = PropertyMock(return_value='aws_mock_secret')
+        token_property = PropertyMock(return_value='aws_mock_token')
+        region_property = PropertyMock(return_value='aws_mock_region_name')
+        type(mock_aws_credentials).access_key = key_property
+        type(mock_aws_credentials).secret_key = secret_property
+        type(mock_aws_credentials).token = token_property
+
+        mock_local_session = Mock()
+        type(mock_local_session).region_name = region_property
+        mock_boto_session.return_value = mock_local_session
+        mock_local_session.get_credentials.return_value = mock_aws_credentials
+
+        mock_comprehend_connection = Mock()
+        mock_boto_client.return_value = mock_comprehend_connection
+
+        expected_calls = [
+            call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name'),
+            call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name')
+        ]
+
+        comprehend_connection = AWS().comprehend_connection()
+
+        self.assertEqual(comprehend_connection, mock_comprehend_connection)
+        mock_boto_client.assert_has_calls(expected_calls, any_order=True)
