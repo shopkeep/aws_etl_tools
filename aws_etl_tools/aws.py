@@ -52,6 +52,11 @@ class AWS:
                                     aws_session_token=self.token,
                                     region_name=self.region_name)
 
+    def athena_connection(self):
+        return boto3.client('athena', aws_access_key_id=self.key,
+                                    aws_secret_access_key=self.secret,
+                                    aws_session_token=self.token)
+
     def _connect_with_permanent_credentials(self, **kwargs):
         '''creates an aws session through boto using a set key and secret
             that is either passed in explicitly, set through environment

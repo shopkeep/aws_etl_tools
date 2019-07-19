@@ -120,10 +120,35 @@ class TestAWSConnection(unittest.TestCase):
         mock_boto_client.return_value = mock_comprehend_connection
 
         expected_call = [
-            call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name'),
+            call('comprehend', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name')
         ]
 
         comprehend_connection = AWS().comprehend_connection()
 
         self.assertEqual(comprehend_connection, mock_comprehend_connection)
+        mock_boto_client.assert_has_calls(expected_call, any_order=True)
+
+
+    @patch.object(boto3, 'client')
+    @patch.object(boto3, 'Session')
+    def test_initializes_and_returns_athena_connection(self, mock_boto_session, mock_boto_client):
+        mock_aws_credentials = Mock()
+        key_property = PropertyMock(return_value='aws_mock_key')
+        secret_property = PropertyMock(return_value='aws_mock_secret')
+        token_property = PropertyMock(return_value='aws_mock_token')
+        type(mock_aws_credentials).access_key = key_property
+        type(mock_aws_credentials).secret_key = secret_property
+        type(mock_aws_credentials).token = token_property
+        mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
+
+        mock_athena_connection = Mock()
+        mock_boto_client.return_value = mock_athena_connection
+
+        expected_call = [
+            call('athena', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token')
+        ]
+
+        athena_connection = AWS().athena_connection()
+
+        self.assertEqual(athena_connection, mock_athena_connection)
         mock_boto_client.assert_has_calls(expected_call, any_order=True)
