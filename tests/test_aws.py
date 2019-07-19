@@ -129,9 +129,10 @@ class TestAWSConnection(unittest.TestCase):
         mock_boto_client.assert_has_calls(expected_call, any_order=True)
 
 
+    @patch.object(boto3, 'resource')
     @patch.object(boto3, 'client')
     @patch.object(boto3, 'Session')
-    def test_initializes_and_returns_athena_connection(self, mock_boto_session, mock_boto_client):
+    def test_initializes_and_returns_athena_connection(self, mock_boto_session, mock_boto_client, _):
         mock_aws_credentials = Mock()
         key_property = PropertyMock(return_value='aws_mock_key')
         secret_property = PropertyMock(return_value='aws_mock_secret')
