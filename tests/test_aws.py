@@ -137,16 +137,22 @@ class TestAWSConnection(unittest.TestCase):
         key_property = PropertyMock(return_value='aws_mock_key')
         secret_property = PropertyMock(return_value='aws_mock_secret')
         token_property = PropertyMock(return_value='aws_mock_token')
+        region_property = PropertyMock(return_value='aws_mock_region_name')
         type(mock_aws_credentials).access_key = key_property
         type(mock_aws_credentials).secret_key = secret_property
         type(mock_aws_credentials).token = token_property
         mock_boto_session.return_value.get_credentials.return_value = mock_aws_credentials
 
+        mock_local_session = Mock()
+        type(mock_local_session).region_name = region_property
+        mock_boto_session.return_value = mock_local_session
+        mock_local_session.get_credentials.return_value = mock_aws_credentials
+
         mock_athena_connection = Mock()
         mock_boto_client.return_value = mock_athena_connection
 
         expected_call = [
-            call('athena', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token')
+            call('athena', aws_secret_access_key='aws_mock_secret', aws_access_key_id='aws_mock_key', aws_session_token='aws_mock_token', region_name='aws_mock_region_name')
         ]
 
         athena_connection = AWS().athena_connection()
