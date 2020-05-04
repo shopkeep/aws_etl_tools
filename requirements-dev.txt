@@ -5,7 +5,7 @@ boto3==1.7.84
 botocore==1.10.84
 psycopg2==2.7
 SQLAlchemy==1.0.5
-Cython==0.24.1
+Cython==0.29.17
 pandas>=0.14.0
 freezegun==0.3.5
 moto==0.4.23
