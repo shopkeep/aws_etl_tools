@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 running_requirements =[
     'boto3==1.7.84',
     'botocore==1.10.84',
-    'Cython==0.24.1',
+    'Cython==0.29.17',
     'httpretty==0.8.10',
     'pandas>=0.14.0',
     'psycopg2==2.7',
