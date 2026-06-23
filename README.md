@@ -16,7 +16,7 @@ creds = {'database_name': 'my_db'
          'port': 5439}
 my_db = RedshiftDatabase(creds)
 ```
-If you're going to be loading the same database a lot, we recommend subclassing this object and adding your own logic. For example, if you have an application that can run against a staging and a production environment, it might be a good idea to add the concept of an `environment` to your database abstraction. We do this at Shopkeep. 
+If you're going to be loading the same database a lot, we recommend subclassing this object and adding your own logic. For example, if you have an application that can run against a staging and a production environment, it might be a good idea to add the concept of an `environment` to your database abstraction. We do this at Shopkeep.
 #### target_table
 The name of the table must explicitly include the schema: e.g. `public.user_events`
 #### upsert_uniqueness_key
@@ -34,10 +34,10 @@ You could also set it directly on the config object like this:
 from aws_etl_tools import config
 config.S3_BASE_PATH = 's3://ye-bucket/this/is/where/we/work'
 ```
-If you don't do this, you'll get a helpful error message. 
+If you don't do this, you'll get a helpful error message.
 
 ### Sources
-There are several of these which can be found in `aws_etl_tools/redshift_ingest/sources.py`. Let's dive into some. If you check the code, you'll notice that many of them call others. 
+There are several of these which can be found in `aws_etl_tools/redshift_ingest/sources.py`. Let's dive into some. If you check the code, you'll notice that many of them call others.
 #### from_in_memory
 Let's imagine you have a list of tuples of data that you'd like to upsert to Redshift. Here's how you might do this:
 ```python
