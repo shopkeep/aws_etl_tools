@@ -61,5 +61,3 @@ class TestRedshiftIngestManifest(unittest.TestCase):
             with_manifest=True
         )
         self.TARGET_DATABASE.ingestor.assert_called_once_with()
-
-

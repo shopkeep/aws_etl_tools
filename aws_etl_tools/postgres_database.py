@@ -45,4 +45,3 @@ class PostgresDatabase:
 
     def create_database_engine(self):
         return create_engine('postgres://%(username)s:%(password)s@%(host)s:%(port)s/%(database_name)s' % self.credentials)
-
