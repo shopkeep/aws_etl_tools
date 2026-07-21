@@ -9,7 +9,7 @@ running_requirements =[
     'pandas>=0.14.0',
     'psycopg2==2.7',
     'requests==2.20.0',
-    'SQLAlchemy==1.0.5'
+    'SQLAlchemy==1.3.0'
 ]
 
 setup(
